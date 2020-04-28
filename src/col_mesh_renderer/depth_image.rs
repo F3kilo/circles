@@ -53,7 +53,6 @@ impl DepthImage {
             .usage(vk::ImageUsageFlags::DEPTH_STENCIL_ATTACHMENT)
             .sharing_mode(vk::SharingMode::EXCLUSIVE);
 
-        let depth_image = unsafe { device.create_image(&depth_image_create_info, None) }.unwrap();
-        depth_image
+        unsafe { device.create_image(&depth_image_create_info, None) }.unwrap()
     }
 }
