@@ -5,6 +5,7 @@ use crate::circles_app::circle::Circle;
 use crate::vulkan::Vulkan;
 use glam::Vec2;
 use slog::Logger;
+use std::rc::Rc;
 use std::time::{Duration, Instant};
 use winit::dpi::{PhysicalSize, Size};
 use winit::event_loop::{EventLoop, EventLoopWindowTarget};
@@ -17,14 +18,14 @@ pub struct CirclesApp {
     first_update: bool,
     logger: Logger,
     mesh_window: Window,
-    vk: Vulkan,
+    vk: Rc<Vulkan>,
     // sprite_window: Window,
 }
 
 impl CirclesApp {
     pub fn new(logger: Logger, field_size: Vec2, event_loop: &EventLoop<()>) -> Self {
         let mesh_window = Self::create_mesh_window(event_loop);
-        let vk = Vulkan::new("Circles", &mesh_window);
+        let vk = Rc::new(Vulkan::new("Circles", logger.clone()));
         Self {
             circles: Vec::new(),
             field_size,
@@ -87,7 +88,8 @@ impl App for CirclesApp {
             circle.update(elapsed_time);
         }
         std::thread::sleep(Duration::from_millis(15));
-        Status::Run
+
+        Status::Finish
     }
 
     fn draw(&mut self, _window_id: WindowId) {}

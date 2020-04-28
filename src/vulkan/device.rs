@@ -1,24 +1,17 @@
 use super::command_buffers::CommandBuffers;
 use super::physical_device::PhysicalDevice;
-use super::swapchain::Swapchain;
-use crate::vulkan::surface::Surface;
 use ash::version::{DeviceV1_0, InstanceV1_0};
 use ash::{vk, Instance};
+use slog::Logger;
 
 pub struct Device {
     device: ash::Device,
     queue: vk::Queue,
-    command_buffers: CommandBuffers,
-    swapchain: Swapchain,
+    logger: Logger,
 }
 
 impl Device {
-    pub fn new(
-        instance: &Instance,
-        pdevice: &PhysicalDevice,
-        surface: &Surface,
-        window: &winit::window::Window,
-    ) -> Self {
+    pub fn new(instance: &Instance, pdevice: &PhysicalDevice, logger: Logger) -> Self {
         let ext_names = [ash::extensions::khr::Swapchain::name().as_ptr()];
         let priorities = [1f32];
         let queue_info = [vk::DeviceQueueCreateInfo::builder()
@@ -35,22 +28,21 @@ impl Device {
                 .expect("Can't create device");
         let queue = unsafe { device.get_device_queue(pdevice.queue_family_index(), 0) };
 
-        let window_extent = vk::Extent2D {
-            width: window.inner_size().width,
-            height: window.inner_size().height,
-        };
-        let swapchain = Swapchain::new(instance, pdevice, &device, surface, window_extent);
-
-        let command_buffers = CommandBuffers::new(&device, pdevice.queue_family_index());
         Self {
             device,
             queue,
-            command_buffers,
-            swapchain,
+            logger,
         }
     }
 
     pub fn get_vk_device(&self) -> &ash::Device {
         &self.device
+    }
+
+    pub fn destroy(&mut self) {
+        debug!(self.logger, "Device destroy() called");
+        unsafe {
+            self.device.destroy_device(None);
+        }
     }
 }

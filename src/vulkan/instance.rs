@@ -12,18 +12,19 @@ use super::surface::Surface;
 use ash::extensions::khr::Win32Surface;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
 use ash::extensions::khr::XlibSurface;
+use slog::Logger;
 use winit::window::Window;
 
 pub struct Instance {
     debug_callback: DebugCallback,
-    surface: Surface,
     pdevice: PhysicalDevice,
     device: Device,
     instance: ash::Instance,
+    logger: Logger,
 }
 
 impl Instance {
-    pub fn new(entry: &ash::Entry, app_name: &str, window: &Window) -> Self {
+    pub fn new(entry: &ash::Entry, app_name: &str, logger: Logger) -> Self {
         let app_name = CString::new(app_name.as_bytes()).unwrap();
         let engine_name = CString::new("test").unwrap();
         let app_info = Self::app_info(&app_name, &engine_name);
@@ -35,16 +36,15 @@ impl Instance {
             .enabled_extension_names(&ext_names);
 
         let instance = Self::create_instance(&entry, &create_info);
-        let debug_callback = DebugCallback::new(entry, &instance);
-        let surface = Surface::new(entry, &instance, window);
-        let pdevice = PhysicalDevice::select(&instance, &surface);
-        let device = Device::new(&instance, &pdevice, &surface, window);
+        let debug_callback = DebugCallback::new(entry, &instance, logger.clone());
+        let pdevice = PhysicalDevice::select(&instance);
+        let device = Device::new(&instance, &pdevice, logger.clone());
         Self {
             debug_callback,
-            surface,
             pdevice,
             device,
             instance,
+            logger,
         }
     }
 
@@ -95,6 +95,10 @@ impl Instance {
 
 impl Drop for Instance {
     fn drop(&mut self) {
+        debug!(self.logger, "Instance drop() called");
+        self.debug_callback.destroy();
+        self.device.destroy();
+        debug!(self.logger, "Instance destroy() called");
         unsafe { self.instance.destroy_instance(None) };
     }
 }

@@ -148,6 +148,7 @@ dependencies = [
  "slog-async",
  "slog-term",
  "tinyfiledialogs",
+ "winapi 0.3.8",
  "winit",
 ]
 

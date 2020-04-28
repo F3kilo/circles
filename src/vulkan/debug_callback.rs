@@ -1,15 +1,17 @@
 use ash::extensions::ext::DebugReport;
 use ash::{vk, Entry, Instance};
+use slog::Logger;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_void};
 
 pub struct DebugCallback {
     debug_callback: vk::DebugReportCallbackEXT,
     debug_report_loader: DebugReport,
+    logger: Logger,
 }
 
 impl DebugCallback {
-    pub fn new(entry: &Entry, instance: &Instance) -> Self {
+    pub fn new(entry: &Entry, instance: &Instance, logger: Logger) -> Self {
         let debug_report_loader = DebugReport::new(entry, instance);
         let debug_info = vk::DebugReportCallbackCreateInfoEXT::builder()
             .flags(Self::debug_report_flags())
@@ -22,6 +24,7 @@ impl DebugCallback {
         Self {
             debug_callback,
             debug_report_loader,
+            logger,
         }
     }
 
@@ -32,13 +35,12 @@ impl DebugCallback {
             | vk::DebugReportFlagsEXT::DEBUG
         // | vk::DebugReportFlagsEXT::INFORMATION
     }
-}
 
-impl Drop for DebugCallback {
-    fn drop(&mut self) {
+    pub fn destroy(&mut self) {
+        debug!(self.logger, "DebugCallback destroy() called");
         unsafe {
             self.debug_report_loader
-                .destroy_debug_report_callback(self.debug_callback, None)
+                .destroy_debug_report_callback(self.debug_callback, None);
         }
     }
 }
