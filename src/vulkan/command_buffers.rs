@@ -1,14 +1,16 @@
 use ash::version::DeviceV1_0;
 use ash::vk;
+use slog::Logger;
 
 pub struct CommandBuffers {
     pool: vk::CommandPool,
     render: vk::CommandBuffer,
     present: vk::CommandBuffer,
+    logger: Logger,
 }
 
 impl CommandBuffers {
-    pub fn new(device: &ash::Device, queue_family_index: u32) -> Self {
+    pub fn new(device: &ash::Device, queue_family_index: u32, logger: Logger) -> Self {
         let create_info = vk::CommandPoolCreateInfo::builder()
             .flags(vk::CommandPoolCreateFlags::RESET_COMMAND_BUFFER)
             .queue_family_index(queue_family_index);
@@ -31,6 +33,15 @@ impl CommandBuffers {
             pool,
             render,
             present,
+            logger,
+        }
+    }
+
+    pub fn destroy(&mut self, device: &ash::Device) {
+        debug!(self.logger, "Command buffers destroy() called");
+        unsafe {
+            device.free_command_buffers(self.pool, &[self.render, self.present]);
+            device.destroy_command_pool(self.pool, None);
         }
     }
 }
