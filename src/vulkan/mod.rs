@@ -5,12 +5,13 @@ pub mod instance;
 pub mod physical_device;
 pub mod surface;
 pub mod swapchain;
+use crate::vulkan::instance::Instance;
 use ash::Entry;
 use slog::Logger;
 
 /// Order of fields defines order of drop!
 pub struct Vulkan {
-    instance: instance::Instance,
+    instance: Instance,
     entry: Entry,
     logger: Logger,
 }
@@ -24,5 +25,20 @@ impl Vulkan {
             instance,
             logger,
         }
+    }
+
+    pub fn get_instance(&self) -> &Instance {
+        &self.instance
+    }
+
+    pub fn get_entry(&self) -> &Entry {
+        &self.entry
+    }
+}
+
+impl Drop for Vulkan {
+    fn drop(&mut self) {
+        debug!(self.logger, "Vulkan drop() called");
+        self.instance.destroy();
     }
 }

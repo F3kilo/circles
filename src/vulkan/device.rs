@@ -1,4 +1,3 @@
-use super::command_buffers::CommandBuffers;
 use super::physical_device::PhysicalDevice;
 use ash::version::{DeviceV1_0, InstanceV1_0};
 use ash::{vk, Instance};
@@ -24,7 +23,7 @@ impl Device {
             .enabled_extension_names(&ext_names);
 
         let device =
-            unsafe { instance.create_device(pdevice.vk_physical_device(), &create_info, None) }
+            unsafe { instance.create_device(pdevice.get_vk_physical_device(), &create_info, None) }
                 .expect("Can't create device");
         let queue = unsafe { device.get_device_queue(pdevice.queue_family_index(), 0) };
 
@@ -37,6 +36,10 @@ impl Device {
 
     pub fn get_vk_device(&self) -> &ash::Device {
         &self.device
+    }
+
+    pub fn get_vk_queue(&self) -> &vk::Queue {
+        &self.queue
     }
 
     pub fn destroy(&mut self) {

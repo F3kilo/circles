@@ -1,8 +1,7 @@
 use super::physical_device::PhysicalDevice;
 use ash::version::{EntryV1_2, InstanceV1_2};
 use ash::{vk, Entry, Instance};
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-use winit::window::Window;
+use raw_window_handle::RawWindowHandle;
 
 // Libs for windows
 #[cfg(all(windows))]
@@ -15,22 +14,31 @@ use winapi;
 // Libs for linux
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
 use ash::extensions::khr::XlibSurface;
+use slog::Logger;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
 use winit::platform::unix::WindowExtUnix;
 
 pub struct Surface {
     surface_loader: ash::extensions::khr::Surface,
     surface: vk::SurfaceKHR,
+    logger: Logger,
 }
 
 impl Surface {
-    pub fn new(entry: &Entry, instance: &Instance, window: &Window) -> Self {
-        let surface =
-            unsafe { create_surface(entry, instance, &window).expect("Can't create surface") };
+    pub fn new(
+        entry: &Entry,
+        instance: &Instance,
+        window_handle: RawWindowHandle,
+        logger: Logger,
+    ) -> Self {
+        let surface = unsafe {
+            create_surface(entry, instance, window_handle).expect("Can't create surface")
+        };
         let surface_loader = ash::extensions::khr::Surface::new(entry, instance);
         Self {
             surface_loader,
             surface,
+            logger,
         }
     }
 
@@ -48,13 +56,13 @@ impl Surface {
     pub fn get_surface_info(&self, pdevice: &PhysicalDevice) -> SurfaceInfo {
         let formats = unsafe {
             self.surface_loader
-                .get_physical_device_surface_formats(pdevice.vk_physical_device(), self.surface)
+                .get_physical_device_surface_formats(pdevice.get_vk_physical_device(), self.surface)
         }
         .expect("");
         let capabilities = unsafe {
             self.surface_loader
                 .get_physical_device_surface_capabilities(
-                    pdevice.vk_physical_device(),
+                    pdevice.get_vk_physical_device(),
                     self.surface,
                 )
         }
@@ -62,7 +70,7 @@ impl Surface {
         let present_modes = unsafe {
             self.surface_loader
                 .get_physical_device_surface_present_modes(
-                    pdevice.vk_physical_device(),
+                    pdevice.get_vk_physical_device(),
                     self.surface,
                 )
         }
@@ -77,18 +85,20 @@ impl Surface {
     pub fn get_vk_surface(&self) -> &vk::SurfaceKHR {
         &self.surface
     }
+
+    pub fn destroy(&mut self) {
+        debug!(self.logger, "Surface destroy() called");
+        unsafe {
+            self.surface_loader.destroy_surface(self.surface, None);
+        }
+        debug!(self.logger, "Surface destroyed");
+    }
 }
 
 pub struct SurfaceInfo {
     pub formats: Vec<vk::SurfaceFormatKHR>,
     pub capabilities: vk::SurfaceCapabilitiesKHR,
     pub present_modes: Vec<vk::PresentModeKHR>,
-}
-
-impl Drop for Surface {
-    fn drop(&mut self) {
-        unsafe { self.surface_loader.destroy_surface(self.surface, None) }
-    }
 }
 
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
@@ -149,13 +159,13 @@ unsafe fn create_surface<E: EntryV1_0, I: InstanceV1_0>(
 unsafe fn create_surface<E: EntryV1_2, I: InstanceV1_2>(
     entry: &E,
     instance: &I,
-    window: &winit::window::Window,
+    raw_window_handle: RawWindowHandle,
 ) -> Result<vk::SurfaceKHR, vk::Result> {
     use std::ptr;
     use winapi::shared::windef::HWND;
     use winapi::um::libloaderapi::GetModuleHandleW;
 
-    if let RawWindowHandle::Windows(h) = window.raw_window_handle() {
+    if let RawWindowHandle::Windows(h) = raw_window_handle {
         let hwnd = h.hwnd as HWND;
         let hinstance = GetModuleHandleW(ptr::null()) as *const c_void;
         let win32_create_info = vk::Win32SurfaceCreateInfoKHR {

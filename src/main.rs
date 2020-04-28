@@ -1,5 +1,6 @@
 pub mod app;
 mod circles_app;
+pub mod col_mesh_renderer;
 pub mod vulkan;
 
 #[macro_use]
@@ -27,7 +28,7 @@ fn main() {
         *control_flow = ControlFlow::Poll;
         if let Status::Finish = app.process_event(&(), event_loop_wt) {
             *control_flow = ControlFlow::Exit;
-            trace!(logger, "Application finished. Exitting from event loop.");
+            info!(logger, "Application finished. Exitting from event loop.");
             return;
         }
         match event {
@@ -35,7 +36,7 @@ fn main() {
                 trace!(logger, "Main events cleared. Updating presenter");
                 if let Status::Finish = app.update(event_loop_wt) {
                     *control_flow = ControlFlow::Exit;
-                    trace!(logger, "Application finished. Exitting from event loop.");
+                    info!(logger, "Application finished. Exitting from event loop.");
                     return;
                 }
             }

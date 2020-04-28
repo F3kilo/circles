@@ -7,13 +7,11 @@ use std::ffi::{CStr, CString};
 
 use super::device::Device;
 use super::physical_device::PhysicalDevice;
-use super::surface::Surface;
 #[cfg(all(windows))]
 use ash::extensions::khr::Win32Surface;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
 use ash::extensions::khr::XlibSurface;
 use slog::Logger;
-use winit::window::Window;
 
 pub struct Instance {
     debug_callback: DebugCallback,
@@ -46,6 +44,18 @@ impl Instance {
             instance,
             logger,
         }
+    }
+
+    pub fn get_vk_instance(&self) -> &ash::Instance {
+        &self.instance
+    }
+
+    pub fn get_physical_device(&self) -> &PhysicalDevice {
+        &self.pdevice
+    }
+
+    pub fn get_device(&self) -> &Device {
+        &self.device
     }
 
     fn app_info<'a>(app_name: &'a CStr, engine_name: &'a CStr) -> vk::ApplicationInfoBuilder<'a> {
@@ -91,14 +101,12 @@ impl Instance {
                 .expect("Instance creation error")
         }
     }
-}
 
-impl Drop for Instance {
-    fn drop(&mut self) {
-        debug!(self.logger, "Instance drop() called");
+    pub fn destroy(&mut self) {
+        debug!(self.logger, "Instance destroy() called");
         self.debug_callback.destroy();
         self.device.destroy();
-        debug!(self.logger, "Instance destroy() called");
+        debug!(self.logger, "vk::Instance destroy() called");
         unsafe { self.instance.destroy_instance(None) };
     }
 }

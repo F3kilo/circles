@@ -1,23 +1,27 @@
 use super::physical_device::PhysicalDevice;
 use super::surface::Surface;
+use crate::vulkan::instance::Instance;
 use ash::version::DeviceV1_0;
 use ash::vk;
+use slog::Logger;
 
 pub struct Swapchain {
     swapchain: vk::SwapchainKHR,
     swapchain_loader: ash::extensions::khr::Swapchain,
     images: Vec<vk::Image>,
     image_views: Vec<vk::ImageView>,
+    logger: Logger,
 }
 
 impl Swapchain {
     pub fn new(
-        instance: &ash::Instance,
-        pdevice: &PhysicalDevice,
-        device: &ash::Device,
+        instance: &Instance,
         surface: &Surface,
         window_size: vk::Extent2D,
+        logger: Logger,
     ) -> Self {
+        let pdevice = instance.get_physical_device();
+        let device = instance.get_device();
         let surface_info = surface.get_surface_info(pdevice);
         let format = Self::select_format(&surface_info.formats);
         let image_count = Self::select_image_count(&surface_info.capabilities);
@@ -25,7 +29,9 @@ impl Swapchain {
         let pre_transform = Self::select_pre_transform(&surface_info.capabilities);
         let present_mode = Self::select_present_mode(&surface_info.present_modes);
 
-        let swapchain_loader = ash::extensions::khr::Swapchain::new(instance, device);
+        let vk_device = device.get_vk_device();
+        let swapchain_loader =
+            ash::extensions::khr::Swapchain::new(instance.get_vk_instance(), vk_device);
         let swapchain_create_info = vk::SwapchainCreateInfoKHR::builder()
             .surface(*surface.get_vk_surface())
             .min_image_count(image_count)
@@ -44,13 +50,14 @@ impl Swapchain {
 
         let images = unsafe { swapchain_loader.get_swapchain_images(swapchain) }
             .expect("Can't get swapchain images");
-        let image_views = Self::create_image_views(device, &images, format.format);
+        let image_views = Self::create_image_views(vk_device, &images, format.format);
 
         Self {
             swapchain_loader,
             swapchain,
             images,
             image_views,
+            logger,
         }
     }
 
@@ -139,10 +146,9 @@ impl Swapchain {
             .find(|&mode| mode == vk::PresentModeKHR::MAILBOX)
             .unwrap_or(vk::PresentModeKHR::FIFO)
     }
-}
 
-impl Drop for Swapchain {
-    fn drop(&mut self) {
+    pub fn destroy(&mut self) {
+        debug!(self.logger, "Swapchain destroy() called");
         unsafe {
             self.swapchain_loader
                 .destroy_swapchain(self.swapchain, None);

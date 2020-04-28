@@ -13,7 +13,7 @@ impl PhysicalDevice {
             .expect("Can't get physical devices list");
 
         if let Some((pdevice, queue_family_index)) =
-            Self::try_get_descrete_device(instance, pdevices.iter())
+            Self::try_select_descrete_device(instance, pdevices.iter())
         {
             return Self {
                 pdevice,
@@ -22,7 +22,7 @@ impl PhysicalDevice {
         }
 
         if let Some((pdevice, queue_family_index)) =
-            Self::try_get_some_device(instance, pdevices.iter())
+            Self::try_select_some_device(instance, pdevices.iter())
         {
             return Self {
                 pdevice,
@@ -33,7 +33,7 @@ impl PhysicalDevice {
         panic!("Can't select suit physical device");
     }
 
-    fn try_get_descrete_device<'a>(
+    fn try_select_descrete_device<'a>(
         instance: &Instance,
         pdevices: impl Iterator<Item = &'a vk::PhysicalDevice>,
     ) -> Option<(vk::PhysicalDevice, u32)> {
@@ -46,42 +46,41 @@ impl PhysicalDevice {
                     return None;
                 }
 
-                unsafe { instance.get_physical_device_queue_family_properties(*pdevice) }
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(index, ref info)| {
-                        let supports_graphic_and_surface =
-                            info.queue_flags.contains(vk::QueueFlags::GRAPHICS);
-                        if supports_graphic_and_surface {
-                            Some((*pdevice, index as u32))
-                        } else {
-                            None
-                        }
-                    })
-                    .next()
+                let mb_queue_family_index = Self::select_queue_family_index(instance, *pdevice);
+                if let Some(queue_family_index) = mb_queue_family_index {
+                    return Some((*pdevice, queue_family_index));
+                }
+                None
             })
             .next()
     }
 
-    fn try_get_some_device<'a>(
+    fn try_select_some_device<'a>(
         instance: &Instance,
         pdevices: impl Iterator<Item = &'a vk::PhysicalDevice>,
     ) -> Option<(vk::PhysicalDevice, u32)> {
         pdevices
             .filter_map(|pdevice| {
-                unsafe { instance.get_physical_device_queue_family_properties(*pdevice) }
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(index, ref info)| {
-                        let supports_graphic_and_surface =
-                            info.queue_flags.contains(vk::QueueFlags::GRAPHICS);
-                        if supports_graphic_and_surface {
-                            Some((*pdevice, index as u32))
-                        } else {
-                            None
-                        }
-                    })
-                    .next()
+                let mb_queue_family_index = Self::select_queue_family_index(instance, *pdevice);
+                if let Some(queue_family_index) = mb_queue_family_index {
+                    return Some((*pdevice, queue_family_index));
+                }
+                None
+            })
+            .next()
+    }
+
+    fn select_queue_family_index(instance: &Instance, pdevice: vk::PhysicalDevice) -> Option<u32> {
+        unsafe { instance.get_physical_device_queue_family_properties(pdevice) }
+            .iter()
+            .enumerate()
+            .filter_map(|(index, ref info)| {
+                let supports_graphic = info.queue_flags.contains(vk::QueueFlags::GRAPHICS);
+                if supports_graphic {
+                    Some(index as u32)
+                } else {
+                    None
+                }
             })
             .next()
     }
@@ -90,7 +89,7 @@ impl PhysicalDevice {
         self.queue_family_index
     }
 
-    pub fn vk_physical_device(&self) -> vk::PhysicalDevice {
+    pub fn get_vk_physical_device(&self) -> vk::PhysicalDevice {
         self.pdevice
     }
 }
