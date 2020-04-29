@@ -1,4 +1,5 @@
 use super::surface::Surface;
+use super::VulkanBase;
 use crate::vulkan::base::instance::Instance;
 use ash::version::DeviceV1_0;
 use ash::vk;
@@ -14,13 +15,14 @@ pub struct Swapchain {
 
 impl Swapchain {
     pub fn new(
-        instance: &Instance,
+        base: &VulkanBase,
         surface: &Surface,
         window_size: vk::Extent2D,
         logger: Logger,
     ) -> Self {
-        let pdevice = instance.get_physical_device();
-        let device = instance.get_device();
+        let instance = base.get_instance();
+        let pdevice = base.get_physical_device();
+        let device = base.get_device();
         let vk_pdevice = pdevice.get_vk_physical_device();
         let surface_info = surface.get_surface_info(vk_pdevice);
         let format = Self::select_format(&surface_info.formats);

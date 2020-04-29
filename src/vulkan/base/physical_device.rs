@@ -1,3 +1,4 @@
+use super::Instance;
 use ash::version::InstanceV1_0;
 use ash::vk;
 
@@ -8,17 +9,19 @@ pub struct PhysicalDevice {
 }
 
 impl PhysicalDevice {
-    pub fn select(instance: &ash::Instance) -> Self {
-        let pdevices = unsafe { instance.enumerate_physical_devices() }
+    pub fn select(instance: &Instance) -> Self {
+        let vk_instance = instance.get_vk_instance();
+        let pdevices = unsafe { vk_instance.enumerate_physical_devices() }
             .expect("Can't get physical devices list");
 
         let (pdevice, queue_family_index) =
-            Self::try_select_descrete_device(instance, pdevices.iter()).unwrap_or_else(|| {
-                Self::try_select_some_device(instance, pdevices.iter())
+            Self::try_select_descrete_device(vk_instance, pdevices.iter()).unwrap_or_else(|| {
+                Self::try_select_some_device(vk_instance, pdevices.iter())
                     .expect("Can't select suit physical device")
             });
 
-        let memory_properties = unsafe { instance.get_physical_device_memory_properties(pdevice) };
+        let memory_properties =
+            unsafe { vk_instance.get_physical_device_memory_properties(pdevice) };
 
         Self {
             pdevice,

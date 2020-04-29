@@ -1,3 +1,4 @@
+use super::VulkanBase;
 use ash::version::{EntryV1_2, InstanceV1_2};
 use ash::vk;
 use raw_window_handle::RawWindowHandle;
@@ -24,16 +25,13 @@ pub struct Surface {
 }
 
 impl Surface {
-    pub fn new(
-        entry: &ash::Entry,
-        instance: &ash::Instance,
-        window_handle: RawWindowHandle,
-        logger: Logger,
-    ) -> Self {
+    pub fn new(base: &VulkanBase, window_handle: RawWindowHandle, logger: Logger) -> Self {
+        let vk_entry = base.get_entry();
+        let vk_instance = base.get_instance().get_vk_instance();
         let surface = unsafe {
-            create_surface(entry, instance, window_handle).expect("Can't create surface")
+            create_surface(vk_entry, vk_instance, window_handle).expect("Can't create surface")
         };
-        let surface_loader = ash::extensions::khr::Surface::new(entry, instance);
+        let surface_loader = ash::extensions::khr::Surface::new(vk_entry, vk_instance);
         Self {
             surface_loader,
             surface,

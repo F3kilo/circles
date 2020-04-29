@@ -5,8 +5,6 @@ use ash::vk;
 use ash::Entry;
 use std::ffi::{CStr, CString};
 
-use super::device::Device;
-use super::physical_device::PhysicalDevice;
 #[cfg(all(windows))]
 use ash::extensions::khr::Win32Surface;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
@@ -15,8 +13,6 @@ use slog::Logger;
 
 pub struct Instance {
     debug_callback: DebugCallback,
-    pdevice: PhysicalDevice,
-    device: Device,
     instance: ash::Instance,
     logger: Logger,
 }
@@ -35,12 +31,9 @@ impl Instance {
 
         let instance = Self::create_instance(&entry, &create_info);
         let debug_callback = DebugCallback::new(entry, &instance, logger.clone());
-        let pdevice = PhysicalDevice::select(&instance);
-        let device = Device::new(&instance, &pdevice, logger.clone());
         Self {
             debug_callback,
-            pdevice,
-            device,
+
             instance,
             logger,
         }
@@ -48,14 +41,6 @@ impl Instance {
 
     pub fn get_vk_instance(&self) -> &ash::Instance {
         &self.instance
-    }
-
-    pub fn get_physical_device(&self) -> &PhysicalDevice {
-        &self.pdevice
-    }
-
-    pub fn get_device(&self) -> &Device {
-        &self.device
     }
 
     fn app_info<'a>(app_name: &'a CStr, engine_name: &'a CStr) -> vk::ApplicationInfoBuilder<'a> {
@@ -105,7 +90,6 @@ impl Instance {
     pub fn destroy(&mut self) {
         debug!(self.logger, "Instance destroy() called");
         self.debug_callback.destroy();
-        self.device.destroy();
         debug!(self.logger, "vk::Instance destroy() called");
         unsafe { self.instance.destroy_instance(None) };
     }

@@ -1,5 +1,6 @@
 pub mod base;
 pub mod present;
+pub mod render;
 use crate::vulkan::present::WindowData;
 use base::VulkanBase;
 use present::VulkanPresent;

@@ -1,6 +1,7 @@
+use super::instance::Instance;
 use super::physical_device::PhysicalDevice;
 use ash::version::{DeviceV1_0, InstanceV1_0};
-use ash::{vk, Instance};
+use ash::vk;
 use slog::Logger;
 
 pub struct Device {
@@ -22,9 +23,11 @@ impl Device {
             .queue_create_infos(&queue_info)
             .enabled_extension_names(&ext_names);
 
-        let device =
-            unsafe { instance.create_device(pdevice.get_vk_physical_device(), &create_info, None) }
-                .expect("Can't create device");
+        let vk_instance = instance.get_vk_instance();
+        let device = unsafe {
+            vk_instance.create_device(pdevice.get_vk_physical_device(), &create_info, None)
+        }
+        .expect("Can't create device");
         let queue = unsafe { device.get_device_queue(pdevice.queue_family_index(), 0) };
 
         Self {

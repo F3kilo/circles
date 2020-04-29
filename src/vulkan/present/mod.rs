@@ -20,17 +20,9 @@ pub struct VulkanPresent {
 
 impl VulkanPresent {
     pub fn new(base: &VulkanBase, window_data: WindowData, logger: Logger) -> Self {
-        let instance = base.get_instance();
-        let vk_instance = instance.get_vk_instance();
-        let entry = base.get_entry();
-        let surface = Surface::new(
-            entry,
-            vk_instance,
-            window_data.window_handle,
-            logger.clone(),
-        );
+        let surface = Surface::new(base, window_data.window_handle, logger.clone());
         let swapchain = Swapchain::new(
-            base.get_instance(),
+            base,
             &surface,
             ash::vk::Extent2D {
                 width: window_data.width,
