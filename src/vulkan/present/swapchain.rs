@@ -8,6 +8,7 @@ pub struct Swapchain {
     swapchain: vk::SwapchainKHR,
     swapchain_loader: ash::extensions::khr::Swapchain,
     resolution: vk::Extent2D,
+    surface_format: vk::SurfaceFormatKHR,
     images: Vec<vk::Image>,
     image_views: Vec<vk::ImageView>,
     logger: Logger,
@@ -25,7 +26,7 @@ impl Swapchain {
         let device = base.get_device();
         let vk_pdevice = pdevice.get_vk_physical_device();
         let surface_info = surface.get_surface_info(vk_pdevice);
-        let format = Self::select_format(&surface_info.formats);
+        let surface_format = Self::select_format(&surface_info.formats);
         let image_count = Self::select_image_count(&surface_info.capabilities);
         let resolution = Self::select_resolution(&surface_info.capabilities, window_size);
         let pre_transform = Self::select_pre_transform(&surface_info.capabilities);
@@ -37,8 +38,8 @@ impl Swapchain {
         let swapchain_create_info = vk::SwapchainCreateInfoKHR::builder()
             .surface(*surface.get_vk_surface())
             .min_image_count(image_count)
-            .image_color_space(format.color_space)
-            .image_format(format.format)
+            .image_color_space(surface_format.color_space)
+            .image_format(surface_format.format)
             .image_extent(resolution)
             .image_usage(vk::ImageUsageFlags::COLOR_ATTACHMENT)
             .image_sharing_mode(vk::SharingMode::EXCLUSIVE)
@@ -52,13 +53,14 @@ impl Swapchain {
 
         let images = unsafe { swapchain_loader.get_swapchain_images(swapchain) }
             .expect("Can't get swapchain images");
-        let image_views = Self::create_image_views(vk_device, &images, format.format);
+        let image_views = Self::create_image_views(vk_device, &images, surface_format.format);
 
         Self {
             swapchain_loader,
             swapchain,
             images,
             resolution,
+            surface_format,
             image_views,
             logger,
         }
@@ -92,6 +94,10 @@ impl Swapchain {
                 unsafe { device.create_image_view(&create_view_info, None) }.unwrap()
             })
             .collect()
+    }
+
+    pub fn get_surface_format(&self) -> vk::SurfaceFormatKHR {
+        self.surface_format
     }
 
     pub fn get_resolution(&self) -> vk::Extent2D {

@@ -1,5 +1,6 @@
 pub mod depth_image;
 pub mod semaphores;
+pub mod render_pass;
 
 use super::base::VulkanBase;
 use super::present::VulkanPresent;
