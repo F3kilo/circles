@@ -7,6 +7,7 @@ pub struct CommandBuffers {
     pool: vk::CommandPool,
     render: vk::CommandBuffer,
     present: vk::CommandBuffer,
+    service: vk::CommandBuffer,
     logger: Logger,
 }
 
@@ -23,27 +24,41 @@ impl CommandBuffers {
         };
 
         let buffers_alloc_info = vk::CommandBufferAllocateInfo::builder()
-            .command_buffer_count(2)
+            .command_buffer_count(3)
             .command_pool(pool);
 
         let buffers = unsafe { vk_device.allocate_command_buffers(&buffers_alloc_info) }
             .expect("Can't allocate command buffers");
         let render = buffers[0];
         let present = buffers[1];
+        let service = buffers[2];
 
         Self {
             pool,
             render,
             present,
+            service,
             logger,
         }
+    }
+
+    pub fn get_render(&self) -> &vk::CommandBuffer {
+        &self.render
+    }
+
+    pub fn get_present(&self) -> &vk::CommandBuffer {
+        &self.present
+    }
+
+    pub fn get_service(&self) -> &vk::CommandBuffer {
+        &self.service
     }
 
     pub fn destroy(&mut self, device: &Device) {
         debug!(self.logger, "Command buffers destroy() called");
         let vk_device = device.get_vk_device();
         unsafe {
-            vk_device.free_command_buffers(self.pool, &[self.render, self.present]);
+            vk_device.free_command_buffers(self.pool, &[self.render, self.present, self.service]);
             vk_device.destroy_command_pool(self.pool, None);
         }
     }

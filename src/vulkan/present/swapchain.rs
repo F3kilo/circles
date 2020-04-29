@@ -1,6 +1,5 @@
 use super::surface::Surface;
 use super::VulkanBase;
-use crate::vulkan::base::instance::Instance;
 use ash::version::DeviceV1_0;
 use ash::vk;
 use slog::Logger;
@@ -8,6 +7,7 @@ use slog::Logger;
 pub struct Swapchain {
     swapchain: vk::SwapchainKHR,
     swapchain_loader: ash::extensions::khr::Swapchain,
+    resolution: vk::Extent2D,
     images: Vec<vk::Image>,
     image_views: Vec<vk::ImageView>,
     logger: Logger,
@@ -58,6 +58,7 @@ impl Swapchain {
             swapchain_loader,
             swapchain,
             images,
+            resolution,
             image_views,
             logger,
         }
@@ -91,6 +92,10 @@ impl Swapchain {
                 unsafe { device.create_image_view(&create_view_info, None) }.unwrap()
             })
             .collect()
+    }
+
+    pub fn get_resolution(&self) -> vk::Extent2D {
+        self.resolution
     }
 
     pub fn select_format(formats: &[vk::SurfaceFormatKHR]) -> vk::SurfaceFormatKHR {
@@ -149,9 +154,12 @@ impl Swapchain {
             .unwrap_or(vk::PresentModeKHR::FIFO)
     }
 
-    pub fn destroy(&mut self) {
+    pub fn destroy(&mut self, vk_device: &ash::Device) {
         debug!(self.logger, "Swapchain destroy() called");
         unsafe {
+            for view in &self.image_views {
+                vk_device.destroy_image_view(*view, None);
+            }
             self.swapchain_loader
                 .destroy_swapchain(self.swapchain, None);
         }

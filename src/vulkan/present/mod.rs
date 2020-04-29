@@ -37,9 +37,17 @@ impl VulkanPresent {
         }
     }
 
-    pub fn destroy(&mut self) {
+    pub fn get_surface(&self) -> &Surface {
+        &self.surface
+    }
+
+    pub fn get_swapchain(&self) -> &Swapchain {
+        &self.swapchain
+    }
+
+    pub fn destroy(&mut self, base: &VulkanBase) {
         debug!(self.logger, "VulkanPresent destroy() called.");
-        self.swapchain.destroy();
+        self.swapchain.destroy(base.get_device().get_vk_device());
         self.surface.destroy();
     }
 }

@@ -21,7 +21,7 @@ pub struct VulkanBase {
 
 impl VulkanBase {
     pub fn new(app_name: &str, logger: Logger) -> Self {
-        let entry = Entry::new().expect("Can't init vk entry!");
+        let entry = Entry::new().expect("Can't create vulkan entry!");
         let instance = instance::Instance::new(&entry, app_name, logger.clone());
         let pdevice = PhysicalDevice::select(&instance);
         let device = Device::new(&instance, &pdevice, logger.clone());
