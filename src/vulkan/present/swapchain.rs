@@ -1,6 +1,5 @@
-use super::physical_device::PhysicalDevice;
 use super::surface::Surface;
-use crate::vulkan::instance::Instance;
+use crate::vulkan::base::instance::Instance;
 use ash::version::DeviceV1_0;
 use ash::vk;
 use slog::Logger;
@@ -22,7 +21,8 @@ impl Swapchain {
     ) -> Self {
         let pdevice = instance.get_physical_device();
         let device = instance.get_device();
-        let surface_info = surface.get_surface_info(pdevice);
+        let vk_pdevice = pdevice.get_vk_physical_device();
+        let surface_info = surface.get_surface_info(vk_pdevice);
         let format = Self::select_format(&surface_info.formats);
         let image_count = Self::select_image_count(&surface_info.capabilities);
         let resolution = Self::select_resolution(&surface_info.capabilities, window_size);

@@ -1,6 +1,5 @@
-use super::physical_device::PhysicalDevice;
 use ash::version::{EntryV1_2, InstanceV1_2};
-use ash::{vk, Entry, Instance};
+use ash::vk;
 use raw_window_handle::RawWindowHandle;
 
 // Libs for windows
@@ -26,8 +25,8 @@ pub struct Surface {
 
 impl Surface {
     pub fn new(
-        entry: &Entry,
-        instance: &Instance,
+        entry: &ash::Entry,
+        instance: &ash::Instance,
         window_handle: RawWindowHandle,
         logger: Logger,
     ) -> Self {
@@ -53,26 +52,20 @@ impl Surface {
         .expect("Can't check surface support for physical device")
     }
 
-    pub fn get_surface_info(&self, pdevice: &PhysicalDevice) -> SurfaceInfo {
+    pub fn get_surface_info(&self, pdevice: vk::PhysicalDevice) -> SurfaceInfo {
         let formats = unsafe {
             self.surface_loader
-                .get_physical_device_surface_formats(pdevice.get_vk_physical_device(), self.surface)
+                .get_physical_device_surface_formats(pdevice, self.surface)
         }
         .expect("");
         let capabilities = unsafe {
             self.surface_loader
-                .get_physical_device_surface_capabilities(
-                    pdevice.get_vk_physical_device(),
-                    self.surface,
-                )
+                .get_physical_device_surface_capabilities(pdevice, self.surface)
         }
         .expect("");
         let present_modes = unsafe {
             self.surface_loader
-                .get_physical_device_surface_present_modes(
-                    pdevice.get_vk_physical_device(),
-                    self.surface,
-                )
+                .get_physical_device_surface_present_modes(pdevice, self.surface)
         }
         .expect("");
         SurfaceInfo {
@@ -162,11 +155,10 @@ unsafe fn create_surface<E: EntryV1_2, I: InstanceV1_2>(
     raw_window_handle: RawWindowHandle,
 ) -> Result<vk::SurfaceKHR, vk::Result> {
     use std::ptr;
-    use winapi::shared::windef::HWND;
     use winapi::um::libloaderapi::GetModuleHandleW;
 
     if let RawWindowHandle::Windows(h) = raw_window_handle {
-        let hwnd = h.hwnd as HWND;
+        let hwnd = h.hwnd as winapi::shared::windef::HWND;
         let hinstance = GetModuleHandleW(ptr::null()) as *const c_void;
         let win32_create_info = vk::Win32SurfaceCreateInfoKHR {
             s_type: vk::StructureType::WIN32_SURFACE_CREATE_INFO_KHR,

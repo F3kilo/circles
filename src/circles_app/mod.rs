@@ -2,8 +2,10 @@ mod circle;
 use crate::app::status::Status;
 use crate::app::App;
 use crate::circles_app::circle::Circle;
+use crate::vulkan::present::WindowData;
 use crate::vulkan::Vulkan;
 use glam::Vec2;
+use raw_window_handle::HasRawWindowHandle;
 use slog::Logger;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
@@ -25,9 +27,12 @@ pub struct CirclesApp {
 impl CirclesApp {
     pub fn new(logger: Logger, field_size: Vec2, event_loop: &EventLoop<()>) -> Self {
         let mesh_window = Self::create_mesh_window(event_loop);
-        let vk = Rc::new(Vulkan::new("Circles", logger.clone()));
-        let width = mesh_window.inner_size().width;
-        let height = mesh_window.inner_size().height;
+        let window_data = WindowData {
+            window_handle: mesh_window.raw_window_handle(),
+            width: mesh_window.inner_size().width,
+            height: mesh_window.inner_size().height,
+        };
+        let vk = Rc::new(Vulkan::new("Circles", window_data, logger.clone()));
 
         Self {
             circles: Vec::new(),
