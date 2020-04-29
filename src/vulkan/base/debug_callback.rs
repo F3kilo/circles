@@ -1,5 +1,5 @@
 use ash::extensions::ext::DebugReport;
-use ash::{vk, Entry, Instance};
+use ash::vk;
 use slog::Logger;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_void};
@@ -11,7 +11,7 @@ pub struct DebugCallback {
 }
 
 impl DebugCallback {
-    pub fn new(entry: &Entry, instance: &Instance, logger: Logger) -> Self {
+    pub fn new(entry: &ash::Entry, instance: &ash::Instance, logger: Logger) -> Self {
         let debug_report_loader = DebugReport::new(entry, instance);
         let debug_info = vk::DebugReportCallbackCreateInfoEXT::builder()
             .flags(Self::debug_report_flags())

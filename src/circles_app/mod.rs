@@ -2,10 +2,8 @@ mod circle;
 use crate::app::status::Status;
 use crate::app::App;
 use crate::circles_app::circle::Circle;
-use crate::col_mesh_renderer::ColMeshRenderer;
 use crate::vulkan::Vulkan;
 use glam::Vec2;
-use raw_window_handle::HasRawWindowHandle;
 use slog::Logger;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
@@ -20,7 +18,6 @@ pub struct CirclesApp {
     first_update: bool,
     logger: Logger,
     vk: Rc<Vulkan>,
-    col_mesh_renderer: ColMeshRenderer,
     mesh_window: Window,
     // sprite_window: Window,
 }
@@ -31,13 +28,7 @@ impl CirclesApp {
         let vk = Rc::new(Vulkan::new("Circles", logger.clone()));
         let width = mesh_window.inner_size().width;
         let height = mesh_window.inner_size().height;
-        let window_size = ash::vk::Extent2D { width, height };
-        let col_mesh_renderer = ColMeshRenderer::new(
-            mesh_window.raw_window_handle(),
-            vk.clone(),
-            window_size,
-            logger.clone(),
-        );
+
         Self {
             circles: Vec::new(),
             field_size,
@@ -46,7 +37,6 @@ impl CirclesApp {
             logger,
             mesh_window,
             vk,
-            col_mesh_renderer,
         }
     }
 

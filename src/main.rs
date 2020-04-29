@@ -1,6 +1,5 @@
 pub mod app;
 mod circles_app;
-pub mod col_mesh_renderer;
 pub mod vulkan;
 
 #[macro_use]

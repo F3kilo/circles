@@ -1,5 +1,5 @@
 use ash::version::InstanceV1_0;
-use ash::{vk, Instance};
+use ash::vk;
 
 pub struct PhysicalDevice {
     pdevice: vk::PhysicalDevice,
@@ -8,7 +8,7 @@ pub struct PhysicalDevice {
 }
 
 impl PhysicalDevice {
-    pub fn select(instance: &Instance) -> Self {
+    pub fn select(instance: &ash::Instance) -> Self {
         let pdevices = unsafe { instance.enumerate_physical_devices() }
             .expect("Can't get physical devices list");
 
@@ -28,7 +28,7 @@ impl PhysicalDevice {
     }
 
     fn try_select_descrete_device<'a>(
-        instance: &Instance,
+        instance: &ash::Instance,
         pdevices: impl Iterator<Item = &'a vk::PhysicalDevice>,
     ) -> Option<(vk::PhysicalDevice, u32)> {
         pdevices
@@ -50,7 +50,7 @@ impl PhysicalDevice {
     }
 
     fn try_select_some_device<'a>(
-        instance: &Instance,
+        instance: &ash::Instance,
         pdevices: impl Iterator<Item = &'a vk::PhysicalDevice>,
     ) -> Option<(vk::PhysicalDevice, u32)> {
         pdevices
@@ -64,7 +64,10 @@ impl PhysicalDevice {
             .next()
     }
 
-    fn select_queue_family_index(instance: &Instance, pdevice: vk::PhysicalDevice) -> Option<u32> {
+    fn select_queue_family_index(
+        instance: &ash::Instance,
+        pdevice: vk::PhysicalDevice,
+    ) -> Option<u32> {
         unsafe { instance.get_physical_device_queue_family_properties(pdevice) }
             .iter()
             .enumerate()
