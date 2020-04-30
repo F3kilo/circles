@@ -162,11 +162,11 @@ impl DepthImage {
         debug!(self.logger, "Depth image destroy() called");
         unsafe {
             device.destroy_image_view(self.view, None);
-            debug!(self.logger, "\tView destroyed.");
+            debug!(self.logger, "\tDepth vk::ImageView destroyed.");
             device.free_memory(self.memory, None);
-            debug!(self.logger, "\tMemory freed.");
+            debug!(self.logger, "\tDepth vk::DeviceMemory freed.");
             device.destroy_image(self.image, None);
-            debug!(self.logger, "\tImage destroyed.");
+            debug!(self.logger, "\tDepth vk::Image destroyed.");
         }
     }
 }

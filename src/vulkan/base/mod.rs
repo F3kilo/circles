@@ -60,6 +60,7 @@ impl VulkanBase {
     pub fn destroy(&mut self) {
         debug!(self.logger, "VulkanBase destroy called");
         self.command_buffers.destroy(&self.device);
+        self.device.destroy();
         self.instance.destroy();
     }
 }

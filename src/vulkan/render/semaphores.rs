@@ -37,7 +37,9 @@ impl Semaphores {
         unsafe {
             debug!(self.logger, "Semaphores destroy() called.");
             vk_device.destroy_semaphore(self.rendered, None);
+            debug!(self.logger, "\tRendered vk::Semaphore destroyed");
             vk_device.destroy_semaphore(self.presented, None);
+            debug!(self.logger, "\tPresented vk::Semaphore destroyed");
         }
     }
 }

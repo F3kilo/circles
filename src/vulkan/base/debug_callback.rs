@@ -41,6 +41,7 @@ impl DebugCallback {
         unsafe {
             self.debug_report_loader
                 .destroy_debug_report_callback(self.debug_callback, None);
+            debug!(self.logger, "\tvk::DebugCallbackReport destroyed");
         }
     }
 }

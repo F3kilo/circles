@@ -169,9 +169,11 @@ impl Swapchain {
         unsafe {
             for view in &self.image_views {
                 vk_device.destroy_image_view(*view, None);
+                debug!(self.logger, "\tSwapchain vk::ImageView destroyed");
             }
             self.swapchain_loader
                 .destroy_swapchain(self.swapchain, None);
+            debug!(self.logger, "\tvk::SwapchainKHR destroyed");
         }
     }
 }

@@ -49,7 +49,10 @@ impl RenderPass {
         let render_pass = unsafe { vk_device.create_render_pass(&renderpass_create_info, None) }
             .expect("Can't create render pass");
 
-        Self { render_pass, logger }
+        Self {
+            render_pass,
+            logger,
+        }
     }
 
     fn create_attachment_descrs(color_format: vk::Format) -> [vk::AttachmentDescription; 2] {
@@ -78,13 +81,16 @@ impl RenderPass {
             ..Default::default()
         }
     }
-    
+
     pub fn get_vk_render_pass(&self) -> vk::RenderPass {
         self.render_pass
     }
-    
+
     pub fn destroy(&mut self, device: &ash::Device) {
         debug!(self.logger, "Render pass destroy() called");
-        unsafe { device.destroy_render_pass(self.render_pass, None); }
+        unsafe {
+            device.destroy_render_pass(self.render_pass, None);
+        }
+        debug!(self.logger, "\tvk::RenderPass destroyed");
     }
 }

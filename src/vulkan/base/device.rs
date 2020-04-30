@@ -49,6 +49,7 @@ impl Device {
         debug!(self.logger, "Device destroy() called");
         unsafe {
             self.device.destroy_device(None);
+            debug!(self.logger, "\tvk::Device destroyed");
         }
     }
 }

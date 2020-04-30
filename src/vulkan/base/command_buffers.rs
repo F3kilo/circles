@@ -59,7 +59,9 @@ impl CommandBuffers {
         let vk_device = device.get_vk_device();
         unsafe {
             vk_device.free_command_buffers(self.pool, &[self.render, self.present, self.service]);
+            debug!(self.logger, "\tvk::CommandBuffers freed");
             vk_device.destroy_command_pool(self.pool, None);
+            debug!(self.logger, "\tvk::CommandPool destroyed");
         }
     }
 }

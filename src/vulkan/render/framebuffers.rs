@@ -55,6 +55,7 @@ impl Framebuffers {
         for framebuffer in &self.framebuffers {
             unsafe {
                 device.destroy_framebuffer(*framebuffer, None);
+                debug!(self.logger, "\tvk::Framebuffer destroyed");
             }
         }
     }

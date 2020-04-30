@@ -90,7 +90,9 @@ impl Instance {
     pub fn destroy(&mut self) {
         debug!(self.logger, "Instance destroy() called");
         self.debug_callback.destroy();
-        debug!(self.logger, "vk::Instance destroy() called");
-        unsafe { self.instance.destroy_instance(None) };
+        unsafe {
+            self.instance.destroy_instance(None);
+            debug!(self.logger, "\tvk::Instance destroyed");
+        };
     }
 }

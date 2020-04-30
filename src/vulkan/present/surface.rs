@@ -81,8 +81,8 @@ impl Surface {
         debug!(self.logger, "Surface destroy() called");
         unsafe {
             self.surface_loader.destroy_surface(self.surface, None);
+            debug!(self.logger, "\tvk::SurfaceKHR destroyed");
         }
-        debug!(self.logger, "Surface destroyed");
     }
 }
 
