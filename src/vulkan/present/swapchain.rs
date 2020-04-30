@@ -96,6 +96,10 @@ impl Swapchain {
             .collect()
     }
 
+    pub fn get_image_views(&self) -> &Vec<vk::ImageView> {
+        &self.image_views
+    }
+
     pub fn get_surface_format(&self) -> vk::SurfaceFormatKHR {
         self.surface_format
     }

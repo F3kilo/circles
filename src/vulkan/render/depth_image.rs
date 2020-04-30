@@ -58,6 +58,10 @@ impl DepthImage {
         }
     }
 
+    pub fn get_view(&self) -> vk::ImageView {
+        self.view
+    }
+
     pub fn get_format() -> vk::Format {
         vk::Format::D16_UNORM
     }

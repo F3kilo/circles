@@ -79,6 +79,10 @@ impl RenderPass {
         }
     }
     
+    pub fn get_vk_render_pass(&self) -> vk::RenderPass {
+        self.render_pass
+    }
+    
     pub fn destroy(&mut self, device: &ash::Device) {
         debug!(self.logger, "Render pass destroy() called");
         unsafe { device.destroy_render_pass(self.render_pass, None); }
