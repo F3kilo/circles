@@ -1,6 +1,7 @@
 pub mod surface;
 pub mod swapchain;
 use crate::vulkan::base::VulkanBase;
+use crate::vulkan::render::render_pass::RenderPass;
 use raw_window_handle::RawWindowHandle;
 use slog::Logger;
 use surface::Surface;
@@ -30,6 +31,7 @@ impl VulkanPresent {
             },
             logger.clone(),
         );
+
         Self {
             logger,
             surface,
@@ -47,7 +49,8 @@ impl VulkanPresent {
 
     pub fn destroy(&mut self, base: &VulkanBase) {
         debug!(self.logger, "VulkanPresent destroy() called.");
-        self.swapchain.destroy(base.get_device().get_vk_device());
+        let vk_device = base.get_device().get_vk_device();
+        self.swapchain.destroy(vk_device);
         self.surface.destroy();
     }
 }

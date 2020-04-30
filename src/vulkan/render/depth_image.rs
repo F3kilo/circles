@@ -44,7 +44,7 @@ impl DepthImage {
                     .build(),
             )
             .image(image)
-            .format(vk::Format::D16_UNORM)
+            .format(Self::get_format())
             .view_type(vk::ImageViewType::TYPE_2D);
 
         let view = unsafe { vk_device.create_image_view(&depth_image_view_info, None) }
@@ -56,6 +56,10 @@ impl DepthImage {
             memory,
             logger: logger.clone(),
         }
+    }
+
+    pub fn get_format() -> vk::Format {
+        vk::Format::D16_UNORM
     }
 
     fn transit_image_layout(base: &VulkanBase, depth_image: vk::Image) {
@@ -134,7 +138,7 @@ impl DepthImage {
     fn create_image(device: &ash::Device, resolution: vk::Extent2D) -> vk::Image {
         let depth_image_create_info = vk::ImageCreateInfo::builder()
             .image_type(vk::ImageType::TYPE_2D)
-            .format(vk::Format::D16_UNORM)
+            .format(Self::get_format())
             .extent(vk::Extent3D {
                 width: resolution.width,
                 height: resolution.height,
