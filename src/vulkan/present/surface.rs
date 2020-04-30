@@ -96,14 +96,14 @@ pub struct SurfaceInfo {
 unsafe fn create_surface<E: EntryV1_2, I: InstanceV1_2>(
     entry: &E,
     instance: &I,
-    window: &winit::window::Window,
+    window_handle: RawWindowHandle,
 ) -> Result<vk::SurfaceKHR, vk::Result> {
-    if let RawWindowHandle::Xlib(_) = window.raw_window_handle() {
-        let xlib_dislplay = window.xlib_display().expect("Can't get xlib display");
-        let xlib_window = window.xlib_window().expect("Can't get xlib window");
+    if let RawWindowHandle::Xlib(handle) = window_handle {
+        let xlib_dislplay = handle.display as *mut vk::Display;
+        let xlib_window = handle.window;
         let xlib_create_info = vk::XlibSurfaceCreateInfoKHR::builder()
             .window(xlib_window)
-            .dpy(xlib_dislplay as *mut vk::Display);
+            .dpy(xlib_dislplay);
 
         let xlib_surface_loader = XlibSurface::new(entry, instance);
         return xlib_surface_loader.create_xlib_surface(&xlib_create_info, None);
