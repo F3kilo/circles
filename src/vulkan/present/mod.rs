@@ -1,7 +1,6 @@
 pub mod surface;
 pub mod swapchain;
 use crate::vulkan::base::VulkanBase;
-use crate::vulkan::render::render_pass::RenderPass;
 use raw_window_handle::RawWindowHandle;
 use slog::Logger;
 use surface::Surface;
