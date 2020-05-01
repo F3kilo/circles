@@ -15,8 +15,6 @@ use winapi;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
 use ash::extensions::khr::XlibSurface;
 use slog::Logger;
-#[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
-use winit::platform::unix::WindowExtUnix;
 
 pub struct Surface {
     surface_loader: ash::extensions::khr::Surface,
@@ -28,10 +26,28 @@ impl Surface {
     pub fn new(base: &VulkanBase, window_handle: RawWindowHandle, logger: Logger) -> Self {
         let vk_entry = base.get_entry();
         let vk_instance = base.get_instance().get_vk_instance();
-        let surface = unsafe {
-            create_surface(vk_entry, vk_instance, window_handle).expect("Can't create surface")
-        };
+        let pdevice = base.get_physical_device();
+        let queue_family_index = pdevice.get_queue_family_index();
+        let vk_pdevice = pdevice.get_vk_physical_device();
+
         let surface_loader = ash::extensions::khr::Surface::new(vk_entry, vk_instance);
+
+        let surface = unsafe {
+            create_surface(vk_entry, vk_instance, window_handle).expect("Can't create surface.")
+        };
+        let supported = unsafe {
+            surface_loader.get_physical_device_surface_support(
+                vk_pdevice,
+                queue_family_index,
+                surface,
+            )
+        }
+        .expect("Can't check surface support by physical device.");
+
+        if !supported {
+            panic!("Surface is not supported by physical device.");
+        }
+
         Self {
             surface_loader,
             surface,

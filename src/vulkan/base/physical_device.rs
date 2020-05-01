@@ -85,7 +85,7 @@ impl PhysicalDevice {
             .next()
     }
 
-    pub fn queue_family_index(&self) -> u32 {
+    pub fn get_queue_family_index(&self) -> u32 {
         self.queue_family_index
     }
 

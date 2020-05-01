@@ -26,7 +26,7 @@ impl VulkanBase {
         let pdevice = PhysicalDevice::select(&instance);
         let device = Device::new(&instance, &pdevice, logger.clone());
         let command_buffers =
-            CommandBuffers::new(&device, pdevice.queue_family_index(), logger.clone());
+            CommandBuffers::new(&device, pdevice.get_queue_family_index(), logger.clone());
         Self {
             command_buffers,
             device,

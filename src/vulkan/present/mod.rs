@@ -21,7 +21,9 @@ pub struct VulkanPresent {
 
 impl VulkanPresent {
     pub fn new(base: &VulkanBase, window_data: WindowData, logger: Logger) -> Self {
+        debug!(logger, "Creating surface.");
         let surface = Surface::new(base, window_data.window_handle, logger.clone());
+        debug!(logger, "Creating swapchain.");
         let swapchain = Swapchain::new(
             base,
             &surface,
@@ -31,6 +33,8 @@ impl VulkanPresent {
             },
             logger.clone(),
         );
+
+        debug!(logger, "Presenter initialized.");
 
         Self {
             logger,

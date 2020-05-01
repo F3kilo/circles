@@ -15,7 +15,7 @@ impl Device {
         let ext_names = [ash::extensions::khr::Swapchain::name().as_ptr()];
         let priorities = [1f32];
         let queue_info = [vk::DeviceQueueCreateInfo::builder()
-            .queue_family_index(pdevice.queue_family_index())
+            .queue_family_index(pdevice.get_queue_family_index())
             .queue_priorities(&priorities)
             .build()];
 
@@ -24,11 +24,13 @@ impl Device {
             .enabled_extension_names(&ext_names);
 
         let vk_instance = instance.get_vk_instance();
+        debug!(logger, "Creating device");
         let device = unsafe {
             vk_instance.create_device(pdevice.get_vk_physical_device(), &create_info, None)
         }
         .expect("Can't create device");
-        let queue = unsafe { device.get_device_queue(pdevice.queue_family_index(), 0) };
+        debug!(logger, "Device created");
+        let queue = unsafe { device.get_device_queue(pdevice.get_queue_family_index(), 0) };
 
         Self {
             device,
