@@ -22,7 +22,7 @@ impl Instance {
         let app_name = CString::new(app_name.as_bytes()).unwrap();
         let engine_name = CString::new("test").unwrap();
         let app_info = Self::app_info(&app_name, &engine_name);
-        let layers = vec!["VK_LAYER_LUNARG_standard_validation\0".as_ptr() as *const i8];
+        let layers = vec!["VK_LAYER_KHRONOS_validation\0".as_ptr() as *const i8];
         let ext_names = Self::extension_names();
         let create_info = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)

@@ -56,6 +56,6 @@ unsafe extern "system" fn vulkan_debug_callback(
     p_message: *const c_char,
     _: *mut c_void,
 ) -> u32 {
-    println!("DEB_RC: {:?}", CStr::from_ptr(p_message));
+    println!("DEBUG_REPORT_CALLBACK: {:?}", CStr::from_ptr(p_message));
     vk::FALSE
 }
