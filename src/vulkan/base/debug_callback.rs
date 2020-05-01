@@ -33,7 +33,7 @@ impl DebugCallback {
             | vk::DebugReportFlagsEXT::WARNING
             | vk::DebugReportFlagsEXT::PERFORMANCE_WARNING
             | vk::DebugReportFlagsEXT::DEBUG
-            | vk::DebugReportFlagsEXT::INFORMATION
+        // | vk::DebugReportFlagsEXT::INFORMATION
     }
 
     pub fn destroy(&mut self) {
