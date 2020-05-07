@@ -2,6 +2,7 @@ pub mod base;
 pub mod present;
 pub mod render;
 use crate::vulkan::present::WindowData;
+use ash::version::DeviceV1_0;
 use base::VulkanBase;
 use present::VulkanPresent;
 use render::VulkanRenderer;
@@ -26,11 +27,22 @@ impl Vulkan {
             logger,
         }
     }
+
+    pub fn render(&self) {
+        self.render.render(&self.base, &self.present);
+    }
 }
 
 impl Drop for Vulkan {
     fn drop(&mut self) {
         debug!(self.logger, "Vulkan drop() called");
+        unsafe {
+            self.base
+                .get_device()
+                .get_vk_device()
+                .device_wait_idle()
+                .expect("Can't wait for device idle");
+        }
         self.render.destroy(&self.base);
         self.present.destroy(&self.base);
         self.base.destroy();

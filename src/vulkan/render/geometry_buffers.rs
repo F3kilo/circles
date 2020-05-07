@@ -28,6 +28,16 @@ impl GeometryBuffers {
         let memory_size = mem_req.size;
         let pdevice = base.get_physical_device();
         let memory = Self::allocate_memory(pdevice, vk_device, &mem_req);
+
+        unsafe {
+            vk_device
+                .bind_buffer_memory(vertices, memory, 0)
+                .expect("Can't bind vertex buffer memory");
+            vk_device
+                .bind_buffer_memory(indices, memory, index_buffer_offset)
+                .expect("Can't bind index buffer memory");
+        };
+
         Self {
             vertices,
             indices,
@@ -36,6 +46,14 @@ impl GeometryBuffers {
             index_buffer_offset,
             logger,
         }
+    }
+
+    pub fn get_vertex_buffer(&self) -> vk::Buffer {
+        self.vertices
+    }
+
+    pub fn get_index_buffer(&self) -> vk::Buffer {
+        self.indices
     }
 
     pub fn write_triangle(&mut self, vk_device: &ash::Device) {

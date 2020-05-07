@@ -66,6 +66,18 @@ impl Swapchain {
         }
     }
 
+    pub fn get_vk_swapchain(&self) -> vk::SwapchainKHR {
+        self.swapchain
+    }
+
+    pub fn present(&self, present_info: &vk::PresentInfoKHR, queue: vk::Queue) {
+        unsafe {
+            self.swapchain_loader
+                .queue_present(queue, present_info)
+                .expect("Can't present image");
+        }
+    }
+
     fn create_image_views(
         device: &ash::Device,
         images: &[vk::Image],
@@ -162,6 +174,19 @@ impl Swapchain {
             .cloned()
             .find(|&mode| mode == vk::PresentModeKHR::MAILBOX)
             .unwrap_or(vk::PresentModeKHR::FIFO)
+    }
+
+    pub fn acquire_next_image(&self, presented_semaphore: vk::Semaphore) -> u32 {
+        unsafe {
+            self.swapchain_loader.acquire_next_image(
+                self.swapchain,
+                std::u64::MAX,
+                presented_semaphore,
+                vk::Fence::null(),
+            )
+        }
+        .expect("")
+        .0
     }
 
     pub fn destroy(&mut self, vk_device: &ash::Device) {

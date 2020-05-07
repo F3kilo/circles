@@ -43,8 +43,8 @@ impl Device {
         &self.device
     }
 
-    pub fn get_vk_queue(&self) -> &vk::Queue {
-        &self.queue
+    pub fn get_vk_queue(&self) -> vk::Queue {
+        self.queue
     }
 
     pub fn destroy(&mut self) {

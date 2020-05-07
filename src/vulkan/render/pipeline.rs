@@ -89,18 +89,8 @@ impl Pipeline {
 
         let surface_resolution = presenter.get_swapchain().get_resolution();
 
-        let viewports = [vk::Viewport {
-            x: 0.0,
-            y: 0.0,
-            width: surface_resolution.width as f32,
-            height: surface_resolution.height as f32,
-            min_depth: 0.0,
-            max_depth: 1.0,
-        }];
-        let scissors = [vk::Rect2D {
-            offset: vk::Offset2D { x: 0, y: 0 },
-            extent: surface_resolution,
-        }];
+        let viewports = Self::get_viewports(surface_resolution);
+        let scissors = Self::get_scissors(surface_resolution);
 
         let viewport_state_info = vk::PipelineViewportStateCreateInfo::builder()
             .scissors(&scissors)
@@ -183,6 +173,28 @@ impl Pipeline {
             layout,
             logger,
         }
+    }
+
+    pub fn get_vk_pipeline(&self) -> vk::Pipeline {
+        self.pipeline
+    }
+
+    pub fn get_viewports(surface_resolution: vk::Extent2D) -> [vk::Viewport; 1] {
+        [vk::Viewport {
+            x: 0.0,
+            y: 0.0,
+            width: surface_resolution.width as f32,
+            height: surface_resolution.height as f32,
+            min_depth: 0.0,
+            max_depth: 1.0,
+        }]
+    }
+
+    pub fn get_scissors(surface_resolution: vk::Extent2D) -> [vk::Rect2D; 1] {
+        [vk::Rect2D {
+            offset: vk::Offset2D { x: 0, y: 0 },
+            extent: surface_resolution,
+        }]
     }
 
     fn create_layout(vk_device: &ash::Device) -> vk::PipelineLayout {

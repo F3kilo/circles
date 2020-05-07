@@ -116,7 +116,7 @@ impl DepthImage {
             .expect("Create fence failed.");
 
         let queue = base.get_device().get_vk_queue();
-        unsafe { vk_device.queue_submit(*queue, &[submit_info], submit_fence) }
+        unsafe { vk_device.queue_submit(queue, &[submit_info], submit_fence) }
             .expect("Can't submit depth imagege layout change command buffer.");
 
         unsafe { vk_device.wait_for_fences(&[submit_fence], true, std::u64::MAX) }

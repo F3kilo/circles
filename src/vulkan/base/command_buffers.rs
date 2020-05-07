@@ -42,12 +42,12 @@ impl CommandBuffers {
         }
     }
 
-    pub fn get_render(&self) -> &vk::CommandBuffer {
-        &self.render
+    pub fn get_render(&self) -> vk::CommandBuffer {
+        self.render
     }
 
-    pub fn get_present(&self) -> &vk::CommandBuffer {
-        &self.present
+    pub fn get_present(&self) -> vk::CommandBuffer {
+        self.present
     }
 
     pub fn get_service(&self) -> &vk::CommandBuffer {
